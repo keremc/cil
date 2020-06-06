@@ -767,3 +767,5 @@ let feature =
       dumpFunctionCallGraphToFile ());
     fd_post_check = true;
   }
+
+let () = Feature.register feature
