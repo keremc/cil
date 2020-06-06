@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -6,6 +7,12 @@ void
 print(char c)
 {
 	printf("c = %c\n", c);
+}
+
+void
+upper(char c)
+{
+	printf("toupper(c) = %c\n", toupper(c));
 }
 
 void
@@ -20,7 +27,7 @@ start(void)
 	void	(*g)(char);
 
 	n = rand();
-	g = n % 2 == 0 ? print : noop;
+	g = n % 2 == 0 ? upper : noop;
 	g('g');
 }
 
