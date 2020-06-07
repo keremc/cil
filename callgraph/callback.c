@@ -1,0 +1,1 @@
+../goblint/03-practical/06-callback.c
