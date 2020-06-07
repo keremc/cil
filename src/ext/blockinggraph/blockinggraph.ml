@@ -134,7 +134,6 @@ let getFunctionPtrNode (t: typ) : node =
 let startNode: node = newNode "@@startNode@@" true false
 
 
-(*
 (** Dump the function call graph. *)
 let dumpFunctionCallGraph (start: node) =
   Hashtbl.iter (fun _ x -> x.scanned <- false) functionNodes;
@@ -161,7 +160,6 @@ let dumpFunctionCallGraph (start: node) =
   in
   dumpOneNode 0 start;
   output_string !E.logChannel "\n\n"
-*)
 
 let dumpFunctionCallGraphToFile () =
   let channel = open_out "graph" in
@@ -473,7 +471,7 @@ let makeAndDumpBlockingGraphs () : unit =
   List.iter
     (fun n ->
        markYieldPoints n;
-       (*dumpFunctionCallGraph n;*)
+       dumpFunctionCallGraph n;
        makeBlockingGraph n;
        dumpBlockingGraph ();
        instrumentBlockingPoints ())
