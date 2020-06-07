@@ -762,7 +762,7 @@ let feature =
       makeFunctionCallGraph f;
       makeStartNodeLinks ();
       markBlockingFunctions ();
-      (* makeAndDumpBlockingGraphs (); *)
+      makeAndDumpBlockingGraphs ();
       instrumentProgram f;
       dumpFunctionCallGraphToFile ());
     fd_post_check = true;
