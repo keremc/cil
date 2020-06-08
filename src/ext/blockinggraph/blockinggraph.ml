@@ -201,7 +201,7 @@ let addCall (callerNode: node) (calleeNode: node) (sopt: stmt option) =
   end;
   match sopt with
     Some s ->
-      if not (List.exists (fun (s', _) -> s' = s) calleeNode.predstmts) then
+      if not (List.exists (fun (s', _) -> s'.sid = s.sid) calleeNode.predstmts) then
         calleeNode.predstmts <- (s, callerNode) :: calleeNode.predstmts
   | None -> ()
 
