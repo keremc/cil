@@ -447,20 +447,21 @@ let compute_results (show_sets : bool) : unit =
   let total_pointed_to = ref 0
   and total_lvalues = H.length lvalue_hash
   and counted_lvalues = ref 0
-  and lval_elts : (string * (string list)) list ref = ref [] in
-  let print_result (name, set) =
+  and lval_elts : (varinfo * (varinfo list)) list ref = ref [] in
+  let print_result (vinf, set) =
     let rec print_set s =
       match s with
           [] -> ()
-        | h :: [] -> print_string h
+        | h :: [] -> print_string (h.vname ^ "@" ^ (string_of_int h.vdecl.line))
         | h :: t ->
-            print_string (h ^ ", ");
+            print_string (h.vname ^ "@" ^ (string_of_int h.vdecl.line) ^ ", ");
             print_set t
     and ptsize = List.length set in
       total_pointed_to := !total_pointed_to + ptsize;
       if ptsize > 0 then
         begin
-          print_string (name ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
+          print_string (vinf.vname ^ "@" ^ (string_of_int vinf.vdecl.line)
+            ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
           print_set set;
           print_newline ()
         end
@@ -486,7 +487,7 @@ let compute_results (show_sets : bool) : unit =
         Hashtbl.iter
           (fun vinf -> fun lv ->
              show_progress_fn counted_lvalues total_lvalues;
-             try lval_elts := (vinf.vname, A.points_to_names lv) :: !lval_elts
+             try lval_elts := (vinf, A.points_to lv) :: !lval_elts
              with A.UnknownLocation -> ())
           lvalue_hash;
         List.iter print_result !lval_elts;
