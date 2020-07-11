@@ -1,10 +1,12 @@
-int *a;
+int *a, *b;
 
-extern int f(int *, int **);
+extern int fn(int *, int **, int **);
 
 int main(void)
 {
-	int b, *c, *d;
-	b = f(c, &d);
+	int c, *d, *e, *f;
+	a = &c;
+	e = &c;
+	c = fn(d, &e, &f);
 	return 0;
 }
