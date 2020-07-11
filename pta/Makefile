@@ -1,8 +1,7 @@
 CC	= gcc
 CFLAGS	= -E
 
-SRCDIR	= 01-cpa
-SRCS	= $(wildcard $(SRCDIR)/*.c)
+SRCS	= $(wildcard */*.c)
 OBJS	= $(patsubst %.c,%.i,$(SRCS))
 
 all: $(OBJS)
@@ -11,4 +10,4 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	-rm -f $(OBJS)
+	-rm -f $(OBJS) */*.i.pta
