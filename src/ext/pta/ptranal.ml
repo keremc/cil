@@ -447,7 +447,7 @@ let compute_results (show_sets : bool) : unit =
   let total_pointed_to = ref 0
   and total_lvalues = H.length lvalue_hash
   and counted_lvalues = ref 0
-  and lval_elts : (varinfo * (varinfo list)) list ref = ref [] in
+  and lval_elts : (varinfo * (varinfo list option)) list ref = ref [] in
   let print_result (vinf, set) =
     let string_of_varinfo v =
       let line = v.vdecl.line in
@@ -460,14 +460,25 @@ let compute_results (show_sets : bool) : unit =
         | h :: t ->
             print_string ((string_of_varinfo h) ^ ", ");
             print_set t
-    and ptsize = List.length set in
-      total_pointed_to := !total_pointed_to + ptsize;
-      if ptsize > 0 then
-        begin
-          print_string ((string_of_varinfo vinf) ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
-          print_set set;
-          print_newline ()
-        end
+    in
+    match set with
+      Some s ->
+        let ptsize = List.length s in
+        total_pointed_to := !total_pointed_to + ptsize;
+        print_string ((string_of_varinfo vinf) ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
+        if ptsize > 0 then
+          begin
+            print_set s;
+            print_newline ()
+          end
+        else
+          begin
+            print_string "[]";
+            print_newline ()
+          end
+    | None ->
+        print_string ((string_of_varinfo vinf) ^ " -> <top>");
+        print_newline ()
   in
   (* Make the most pessimistic assumptions about globals if an
      undefined function is present. Such a function can write to every
@@ -490,8 +501,8 @@ let compute_results (show_sets : bool) : unit =
         Hashtbl.iter
           (fun vinf -> fun lv ->
              show_progress_fn counted_lvalues total_lvalues;
-             try lval_elts := (vinf, A.points_to lv) :: !lval_elts
-             with A.UnknownLocation -> ())
+             try lval_elts := (vinf, Some (A.points_to lv)) :: !lval_elts
+             with A.UnknownLocation -> lval_elts := (vinf, None) :: !lval_elts)
           lvalue_hash;
         List.iter print_result !lval_elts;
         Printf.printf
