@@ -449,19 +449,22 @@ let compute_results (show_sets : bool) : unit =
   and counted_lvalues = ref 0
   and lval_elts : (varinfo * (varinfo list)) list ref = ref [] in
   let print_result (vinf, set) =
+    let string_of_varinfo v =
+      let line = v.vdecl.line in
+      v.vname ^ if line = -1 then "" else "@" ^ (string_of_int line)
+    in
     let rec print_set s =
       match s with
           [] -> ()
-        | h :: [] -> print_string (h.vname ^ "@" ^ (string_of_int h.vdecl.line))
+        | h :: [] -> print_string (string_of_varinfo h)
         | h :: t ->
-            print_string (h.vname ^ "@" ^ (string_of_int h.vdecl.line) ^ ", ");
+            print_string ((string_of_varinfo h) ^ ", ");
             print_set t
     and ptsize = List.length set in
       total_pointed_to := !total_pointed_to + ptsize;
       if ptsize > 0 then
         begin
-          print_string (vinf.vname ^ "@" ^ (string_of_int vinf.vdecl.line)
-            ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
+          print_string ((string_of_varinfo vinf) ^ "(" ^ (string_of_int ptsize) ^ ") -> ");
           print_set set;
           print_newline ()
         end
