@@ -1096,7 +1096,15 @@ let epoints_to (t : tau) : Cil.varinfo list =
     get_vinfos (points_to_aux t)
 
 let points_to_names (lv : lvalue) : string list =
-  Util.list_map (fun v -> v.vname) (points_to lv)
+  let rec get_names l = match l with
+      [] -> []
+    | (_, name, Some v) :: t ->
+        if name = v.vname then
+          (name ^ "@" ^ (string_of_int v.vdecl.line)) :: get_names t
+        else
+          name :: get_names t
+    | (_, _, _) :: t -> get_names t
+  in get_names (points_to_aux lv.contents)
 
 let absloc_points_to (lv : lvalue) : absloc list =
   points_to_aux lv.contents

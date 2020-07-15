@@ -150,7 +150,7 @@ let is_alloc_fun = function
 
 let next_alloc = function
     Lval (Var v, o) ->
-      let name = Printf.sprintf "%s@%d" v.vname (fresh_index ())
+      let name = Printf.sprintf "%s#%d" v.vname (fresh_index ())
       in
         A.address (A.make_lvalue false name (Some v)) (* check *)
   | _ -> raise Bad_return
@@ -447,7 +447,7 @@ let compute_results (show_sets : bool) : unit =
   let total_pointed_to = ref 0
   and total_lvalues = H.length lvalue_hash
   and counted_lvalues = ref 0
-  and lval_elts : (varinfo * (varinfo list option)) list ref = ref [] in
+  and lval_elts : (varinfo * (string list option)) list ref = ref [] in
   let print_result (vinf, set) =
     let string_of_varinfo v =
       let line = v.vdecl.line in
@@ -456,9 +456,9 @@ let compute_results (show_sets : bool) : unit =
     let rec print_set s =
       match s with
           [] -> ()
-        | h :: [] -> print_string (string_of_varinfo h)
+        | h :: [] -> print_string h
         | h :: t ->
-            print_string ((string_of_varinfo h) ^ ", ");
+            print_string (h ^ ", ");
             print_set t
     in
     match set with
@@ -501,7 +501,7 @@ let compute_results (show_sets : bool) : unit =
         Hashtbl.iter
           (fun vinf -> fun lv ->
              show_progress_fn counted_lvalues total_lvalues;
-             try lval_elts := (vinf, Some (A.points_to lv)) :: !lval_elts
+             try lval_elts := (vinf, Some (A.points_to_names lv)) :: !lval_elts
              with A.UnknownLocation -> lval_elts := (vinf, None) :: !lval_elts)
           lvalue_hash;
         List.iter print_result !lval_elts;
