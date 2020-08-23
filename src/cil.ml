@@ -3394,6 +3394,186 @@ class type cilPrinter = object
      * {!Cil.dumpGlobal}. *)
 end
 
+class cilAstDumpClass : cilPrinter = object (self)
+
+  method setCurrentFormals (_: varinfo list) = ()
+
+  method setPrintInstrTerminator (_: string) = ()
+  method getPrintInstrTerminator () = ""
+
+  method private pFunDec (fd: fundec) : doc =
+    text "fundec{var: " ++ (self#pVar fd.svar)
+    ++ text ", formals: ["
+    ++ List.fold_left (fun acc x -> acc ++ text " " ++ x) (text "") (List.map (self#pVDecl ()) fd.sformals)
+    ++ text " ]"
+    ++ text ", locals: ["
+    ++ List.fold_left (fun acc x -> acc ++ text " " ++ x) (text "") (List.map (self#pVDecl ()) fd.slocals)
+    ++ text " ]"
+    ++ text ", body: " ++ (self#pBlock () fd.sbody)
+    ++ text "}"
+
+  method private pInitInfo (ii: initinfo) : doc =
+    (text "initinfo{init: ")
+    ++ (match ii.init with Some i -> self#pInit () i | _ -> text "None")
+    ++ (text "}")
+
+  method private pTypeInfo (ti: typeinfo) : doc =
+    (text "typeinfo{name: ") ++ (text ti.tname)
+    ++ (text ", type: ") ++ (self#pType None () ti.ttype)
+    ++ (text ", referenced: ") ++ (text (string_of_bool ti.treferenced))
+    ++ (text "}")
+
+  method pVDecl () (v: varinfo) : doc =
+    (text "varinfo{name: ") ++ (text v.vname)
+    ++ (text ", type: ") ++ (self#pType None () v.vtype)
+    ++ (text ", attr: ") ++ (self#pAttrs () v.vattr)
+    ++ (text ", storage: TODO")
+    ++ (text ", glob: ") ++ (text (string_of_bool v.vglob))
+    ++ (text ", inline: ") ++ (text (string_of_bool v.vinline))
+    ++ (text ", decl: ") ++ (self#pLineDirective v.vdecl)
+    ++ (text ", init: ") ++ (self#pInitInfo v.vinit)
+    ++ (text ", id: ") ++ (num v.vid)
+    ++ (text ", addrof: ") ++ (text (string_of_bool v.vaddrof))
+    ++ (text ", referenced: ") ++ (text (string_of_bool v.vreferenced))
+    ++ (text ", descr: ") ++ v.vdescr
+    ++ (text ", descrpure: ") ++ (text (string_of_bool v.vdescrpure))
+    ++ (text ", hasdeclinstruction: ") ++ (text (string_of_bool v.vhasdeclinstruction))
+    ++ (text "}")
+
+  method pVar (v: varinfo) : doc = self#pVDecl () v
+
+  method pLval () ((host, o): lval) : doc =
+    text "lval("
+    ++ (match host with
+          Var v -> self#pVar v
+        | Mem e -> self#pExp () e)
+    ++ (self#pOffset (text "") o)
+    ++ text ")"
+
+  method pOffset (_: doc) (o: offset) : doc = text "offset{TODO}"
+
+  method pInstr () (i: instr) : doc =
+    text "instr{"
+    ++ (
+      match i with
+        Set (lv, e, loc) ->
+         text "Set("
+         ++ self#pLval () lv ++ text ", "
+         ++ self#pExp () e ++ text ", "
+         ++ self#pLineDirective loc
+      | VarDecl (v, loc) -> text "VarDecl(" ++ self#pVDecl () v ++ text ", " ++ self#pLineDirective loc
+      | Call (lv, e, args, loc) ->
+         text "Call("
+         ++ (match lv with Some lv' -> self#pLval () lv' | _ -> text "None") ++ text ", "
+         ++ self#pExp () e ++ text ", "
+         ++ text "TODO, "
+         ++ self#pLineDirective loc
+      | _ -> text "...("
+    ) ++ text ")}"
+
+  method pStmt () (s: stmt) : doc =
+    text "stmt{labels: TODO"
+    ++ text ", kind: " ++ self#pStmtKind s () s.skind
+    ++ text ", id: " ++ num s.sid
+    ++ text ", succs: TODO"
+    ++ text ", preds: TODO"
+    ++ text "}"
+
+  method dStmt (out: out_channel) (ind: int) (s: stmt) =
+    fprint out ~width:!lineLength (indent ind (align ++ self#pStmt () s))
+
+  method dBlock (out: out_channel) (ind: int) (b: block) =
+    fprint out ~width:!lineLength (indent ind (align ++ self#pBlock () b))
+
+  method pBlock () (b: block) : doc =
+    text "block{attrs: TODO"
+    ++ text ", stmts: ["
+    ++ List.fold_left (fun acc x -> acc ++ text " " ++ x) (text "") (List.map (self#pStmt ()) b.bstmts)
+    ++ text " ]"
+    ++ text "}"
+
+  method pGlobal () (g: global) : doc = text "global{" ++ (
+      match g with
+        GType (ti, loc) ->
+         (text "Type(") ++ (self#pTypeInfo ti)
+         ++ (text ", ") ++ (self#pLineDirective loc)
+      | GCompTag (ci, loc) -> text "CompTag(TODO, " ++ (self#pLineDirective loc)
+      | GCompTagDecl (ci, loc) -> text "CompTagDecl(TODO, " ++ (self#pLineDirective loc)
+      | GEnumTag (ei, loc) -> text "EnumTag(TODO, " ++ (self#pLineDirective loc)
+      | GEnumTagDecl (ei, loc) -> text "EnumTagDecl(TODO, " ++ (self#pLineDirective loc)
+      | GVarDecl (v, loc) -> text "VarDecl("
+                             ++ (self#pVDecl () v) ++ text ", "
+                             ++ (self#pLineDirective loc)
+      | GVar (v, ii, loc) -> text "Var("
+                             ++ (self#pVDecl () v) ++ text ", "
+                             ++ (self#pInitInfo ii) ++ text ", "
+                             ++ (self#pLineDirective loc)
+      | GFun (fd, loc) -> text "Fun("
+                          ++ (self#pFunDec fd) ++ text ", "
+                          ++ (self#pLineDirective loc)
+      | _ -> text "...("
+    ) ++ text ")}"
+
+  method dGlobal (out: out_channel) (g: global) =
+    fprint out ~width:!lineLength (self#pGlobal () g)
+
+  method pFieldDecl () (fi: fieldinfo) : doc = text "fieldinfo{TODO}"
+
+  method pType (_: doc option) () (t: typ) : doc =
+    (text "typ{")
+    ++ (match t with
+        | TVoid (attrs) -> (text "Void(") ++ (self#pAttrs () attrs)
+        | TInt (kind, attrs) -> (text "Int(TODO, ") ++ (self#pAttrs () attrs)
+        | TFloat (kind, attrs) -> (text "Float(TODO, ") ++ (self#pAttrs () attrs)
+        | TPtr (t', attrs) -> (text "Ptr(") ++ (self#pType None () t') ++ (text ", ") ++ (self#pAttrs () attrs)
+        | TArray (t', e, attrs) -> (text "Array(")
+                                   ++ (self#pType None () t') ++ (text ", ")
+                                   ++ (match e with Some e' -> self#pExp () e' | _ -> text "None") ++ (text ", ")
+                                   ++ (self#pAttrs () attrs)
+        | TFun (ret, args, vararg, attrs) -> (text "Fun(") ++ (self#pType None () ret)
+                                             ++ (text ", TODO, ")
+                                             ++ (text (string_of_bool vararg)) ++ (text ", ")
+                                             ++ (self#pAttrs () attrs)
+        | TNamed (ti, attrs) -> (text "Named(TODO, ") ++ (self#pAttrs () attrs)
+        | TComp (ci, attrs) -> (text "Comp(TODO, ") ++ (self#pAttrs () attrs)
+        | TEnum (ci, attrs) -> (text "Enum(TODO, ") ++ (self#pAttrs () attrs)
+        | TBuiltin_va_list (attrs) -> (text "Builtin_va_list(") ++ (self#pAttrs () attrs)) ++ (text ")}")
+
+  method pAttr (a: attribute) : doc * bool = text "attribute{TODO}", false
+
+  method pAttrParam () (ap: attrparam) : doc = text "attrparam{TODO}"
+
+  method pAttrs () (attrs: attributes) : doc = text "attributes{TODO}"
+
+  method pLabel () (l: label) : doc = text "label{TODO}"
+
+  method pLineDirective ?forcefile:bool (loc: location) : doc = text "location{TODO}"
+
+  method pStmtKind (_: stmt) () (kind: stmtkind) : doc =
+    text "stmtkind{"
+    ++ (
+      match kind with
+        Instr is ->
+         text "Instr(["
+         ++ List.fold_left (fun acc x -> acc ++ text " " ++ x) (text "") (List.map (self#pInstr ()) is)
+         ++ text " ]"
+      | Block b -> text "Block(" ++ self#pBlock () b
+      | _ -> text "...("
+    ) ++ text ")}"
+
+  method pExp () (e: exp) : doc =
+    text "exp{"
+    ++ (match e with
+          Lval lv -> text "Lval(" ++ self#pLval () lv
+        | _ -> text "...("
+       )
+    ++ text ")}"
+
+  method pInit () (i: init) : doc = text "init{TODO}"
+
+  method dInit (out: out_channel) (ind: int) (i: init) =
+    fprint out ~width:!lineLength (indent ind (align ++ self#pInit () i))
+end
 
 class defaultCilPrinterClass : cilPrinter = object (self)
   val mutable currentFormals : varinfo list = []
@@ -4616,7 +4796,7 @@ class defaultCilPrinterClass : cilPrinter = object (self)
 
 end (* class defaultCilPrinterClass *)
 
-let defaultCilPrinter = new defaultCilPrinterClass
+let defaultCilPrinter = new cilAstDumpClass
 
 (* Top-level printing functions *)
 let printType (pp: cilPrinter) () (t: typ) : doc =
