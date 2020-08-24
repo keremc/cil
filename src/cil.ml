@@ -3491,8 +3491,8 @@ class cilAstDumpClass : cilPrinter = object (self)
     ++ text "vid: " ++ num v.vid ++ text ",\n"
     ++ text "vaddrof: " ++ text (string_of_bool v.vaddrof) ++ text ",\n"
     ++ text "vreferenced: " ++ text (string_of_bool v.vreferenced) ++ text ",\n"
-    ++ text "vdescr: " ++ v.vdescr ++ text ",\n"
-    ++ text "vdescrpure: " ++ text (string_of_bool v.vdescrpure) ++ text ",\n"
+    (* ++ text "vdescr: " ++ v.vdescr ++ text ",\n"
+     * ++ text "vdescrpure: " ++ text (string_of_bool v.vdescrpure) ++ text ",\n" *)
     ++ text "vhasdeclinstruction: " ++ text (string_of_bool v.vhasdeclinstruction) ++ text "\n"
     ++ text "}"
 
