@@ -3444,6 +3444,14 @@ class cilAstDumpClass : cilPrinter = object (self)
              Some s -> text "\"" ++ text s ++ text "\""
            | _ -> text "None")
        ++ text ")"
+    | CReal (f, fk, s) ->
+       text "CReal("
+       ++ real f ++ text ", "
+       ++ self#pFKind fk ++ text ", "
+       ++ (match s with
+             Some s -> text "\"" ++ text s ++ text "\""
+           | _ -> text "None")
+       ++ text ")"
     | _ -> failwith "Cannot print constant"
 
   method private pBinOp (bin: binop) : doc =
