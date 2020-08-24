@@ -3464,14 +3464,14 @@ class cilAstDumpClass : cilPrinter = object (self)
   
   method private pFunDec (fd: fundec) : doc =
     text "fundec{\n"
-    ++ text "svar: " ++ self#pVar fd.svar ++ text ",\n"
-    ++ text "sformals: " ++ self#pList self#pVar fd.sformals ++ text ",\n"
-    ++ text "slocals: " ++ self#pList self#pVar fd.slocals ++ text ",\n"
-    ++ text "sbody: " ++ (self#pBlock () fd.sbody) ++ text "\n"
+    ++ text "svar = " ++ self#pVar fd.svar ++ text ";\n"
+    ++ text "sformals = " ++ self#pList self#pVar fd.sformals ++ text ";\n"
+    ++ text "slocals = " ++ self#pList self#pVar fd.slocals ++ text ";\n"
+    ++ text "sbody = " ++ (self#pBlock () fd.sbody) ++ text "\n"
     ++ text "}"
 
   method private pInitInfo (ii: initinfo) : doc =
-    (text "initinfo{init: ")
+    (text "initinfo{init = ")
     ++ (match ii.init with Some i -> self#pInit () i | _ -> text "None")
     ++ (text "}")
 
@@ -3482,27 +3482,27 @@ class cilAstDumpClass : cilPrinter = object (self)
 
   method private pTypeInfo (ti: typeinfo) : doc =
     text "typeinfo{\n"
-    ++ text "tname: \"" ++ text ti.tname ++ text "\",\n"
-    ++ text "ttype: " ++ self#pType None () ti.ttype ++ text ",\n"
-    ++ text "treferenced: " ++ text (string_of_bool ti.treferenced) ++ text "\n"
+    ++ text "tname = \"" ++ text ti.tname ++ text "\";\n"
+    ++ text "ttype = " ++ self#pType None () ti.ttype ++ text ";\n"
+    ++ text "treferenced = " ++ text (string_of_bool ti.treferenced) ++ text "\n"
     ++ text "}"
 
   method pVDecl () (v: varinfo) : doc =
     text "varinfo{\n"
-    ++ text "vname: \"" ++ text v.vname ++ text "\",\n"
-    ++ text "vtype: " ++ self#pType None () v.vtype ++ text ",\n"
-    ++ text "vattr: " ++ self#pAttrs () v.vattr ++ text ",\n"
+    ++ text "vname = \"" ++ text v.vname ++ text "\";\n"
+    ++ text "vtype = " ++ self#pType None () v.vtype ++ text ";\n"
+    ++ text "vattr = " ++ self#pAttrs () v.vattr ++ text ";\n"
     (* ++ (text "vstorage: ") *)
-    ++ text "vglob: " ++ text (string_of_bool v.vglob) ++ text ",\n"
-    ++ text "vinline: " ++ text (string_of_bool v.vinline) ++ text ",\n"
-    ++ text "vdecl: " ++ self#pLineDirective v.vdecl ++ text ",\n"
-    ++ text "vinit: " ++ self#pInitInfo v.vinit ++ text ",\n"
-    ++ text "vid: " ++ num v.vid ++ text ",\n"
-    ++ text "vaddrof: " ++ text (string_of_bool v.vaddrof) ++ text ",\n"
-    ++ text "vreferenced: " ++ text (string_of_bool v.vreferenced) ++ text ",\n"
+    ++ text "vglob = " ++ text (string_of_bool v.vglob) ++ text ";\n"
+    ++ text "vinline = " ++ text (string_of_bool v.vinline) ++ text ";\n"
+    ++ text "vdecl = " ++ self#pLineDirective v.vdecl ++ text ";\n"
+    ++ text "vinit = " ++ self#pInitInfo v.vinit ++ text ";\n"
+    ++ text "vid = " ++ num v.vid ++ text ";\n"
+    ++ text "vaddrof = " ++ text (string_of_bool v.vaddrof) ++ text ";\n"
+    ++ text "vreferenced = " ++ text (string_of_bool v.vreferenced) ++ text ";\n"
     (* ++ text "vdescr: " ++ v.vdescr ++ text ",\n"
      * ++ text "vdescrpure: " ++ text (string_of_bool v.vdescrpure) ++ text ",\n" *)
-    ++ text "vhasdeclinstruction: " ++ text (string_of_bool v.vhasdeclinstruction) ++ text "\n"
+    ++ text "vhasdeclinstruction = " ++ text (string_of_bool v.vhasdeclinstruction) ++ text "\n"
     ++ text "}"
 
   method pVar (v: varinfo) : doc = self#pVDecl () v
@@ -3548,10 +3548,10 @@ class cilAstDumpClass : cilPrinter = object (self)
     | Asm (_, _, _, _, _, _) -> failwith "Cannot print Asm"
 
   method pStmt () (s: stmt) : doc =
-    text "stmt{"
+    text "stmt{\n"
     (* ++ text "labels: " *)
-    ++ text "skind: " ++ self#pStmtKind s () s.skind
-    ++ text ", sid: " ++ num s.sid
+    ++ text "skind = " ++ self#pStmtKind s () s.skind ++ text ";\n"
+    ++ text "sid = " ++ num s.sid ++ text "\n"
     (* ++ text ", succs: "
      * ++ text ", preds: " *)
     ++ text "}"
@@ -3565,7 +3565,7 @@ class cilAstDumpClass : cilPrinter = object (self)
   method pBlock () (b: block) : doc =
     text "block{"
     (* ++ text "battrs: " *)
-    ++ text "bstmts: " ++ self#pList (self#pStmt ()) b.bstmts
+    ++ text "bstmts = " ++ self#pList (self#pStmt ()) b.bstmts
     ++ text "}"
 
   method pGlobal () (g: global) : doc =
@@ -3574,23 +3574,23 @@ class cilAstDumpClass : cilPrinter = object (self)
        text "GType("
        ++ self#pTypeInfo ti ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")\n"
+       ++ text ");;\n"
     | GVarDecl (v, loc) ->
        text "GVarDecl("
        ++ self#pVDecl () v ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")\n"
+       ++ text ");;\n"
     | GVar (v, ii, loc) ->
        text "GVar("
        ++ self#pVar v ++ text ", "
        ++ self#pInitInfo ii ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")\n"
+       ++ text ");;\n"
     | GFun (fd, loc) ->
        text "GFun("
        ++ self#pFunDec fd ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")\n"
+       ++ text ");;\n"
     | _ -> failwith "Cannot print global"
 
   method dGlobal (out: out_channel) (g: global) =
@@ -3668,9 +3668,9 @@ class cilAstDumpClass : cilPrinter = object (self)
 
   method pLineDirective ?forcefile:bool (loc: location) : doc =
     text "location{"
-    ++ text "line: " ++ num loc.line
-    ++ text ", file: \"" ++ text loc.file ++ text "\""
-    ++ text ", byte: " ++ num loc.byte
+    ++ text "line = " ++ num loc.line
+    ++ text "; file = \"" ++ text loc.file ++ text "\""
+    ++ text "; byte = " ++ num loc.byte
     ++ text "}"
 
   method pStmtKind (_: stmt) () (sk: stmtkind) : doc =
