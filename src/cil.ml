@@ -3573,23 +3573,23 @@ class cilAstDumpClass : cilPrinter = object (self)
        text "GType("
        ++ self#pTypeInfo ti ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")"
+       ++ text ")\n"
     | GVarDecl (v, loc) ->
        text "GVarDecl("
        ++ self#pVDecl () v ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")"
+       ++ text ")\n"
     | GVar (v, ii, loc) ->
        text "GVar("
        ++ self#pVar v ++ text ", "
        ++ self#pInitInfo ii ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")"
+       ++ text ")\n"
     | GFun (fd, loc) ->
        text "GFun("
        ++ self#pFunDec fd ++ text ", "
        ++ self#pLineDirective loc
-       ++ text ")"
+       ++ text ")\n"
     | _ -> failwith "Cannot print global"
 
   method dGlobal (out: out_channel) (g: global) =
