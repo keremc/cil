@@ -3456,6 +3456,7 @@ class cilAstDumpClass : cilPrinter = object (self)
 
   method private pBinOp (bin: binop) : doc =
     text (match bin with
+            PlusA -> "PlusA"
           | Mult -> "Mult"
           | _ -> failwith "Cannot print binop")
   
