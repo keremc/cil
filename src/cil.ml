@@ -3406,9 +3406,9 @@ class cilAstDumpClass : cilPrinter = object (self)
     match l with
       [] -> text "[]"
     | h :: t -> let middle = List.fold_left
-                               (fun acc x -> acc ++ text "; " ++ x)
+                               (fun acc x -> acc ++ text ";\n" ++ x)
                                (f h) (List.map f t)
-                in text "[" ++ middle ++ text "]"
+                in text "[\n" ++ middle ++ text "\n]"
 
   method private pIKind (ik: ikind) : doc =
     text (match ik with
@@ -3454,10 +3454,11 @@ class cilAstDumpClass : cilPrinter = object (self)
   method private pFieldInfo (fi: fieldinfo) : doc = text "fieldinfo{}"
   
   method private pFunDec (fd: fundec) : doc =
-    text "fundec{svar: " ++ (self#pVar fd.svar)
-    ++ text ", sformals: " ++ self#pList self#pVar fd.sformals
-    ++ text ", slocals: " ++ self#pList self#pVar fd.slocals
-    ++ text ", sbody: " ++ (self#pBlock () fd.sbody)
+    text "fundec{\n"
+    ++ text "svar: " ++ self#pVar fd.svar ++ text ",\n"
+    ++ text "sformals: " ++ self#pList self#pVar fd.sformals ++ text ",\n"
+    ++ text "slocals: " ++ self#pList self#pVar fd.slocals ++ text ",\n"
+    ++ text "sbody: " ++ (self#pBlock () fd.sbody) ++ text "\n"
     ++ text "}"
 
   method private pInitInfo (ii: initinfo) : doc =
@@ -3471,27 +3472,29 @@ class cilAstDumpClass : cilPrinter = object (self)
     | Mem e -> text "Exp(" ++ self#pExp () e ++ text ")"
 
   method private pTypeInfo (ti: typeinfo) : doc =
-    (text "typeinfo{tname: ") ++ (text ti.tname)
-    ++ (text ", ttype: ") ++ (self#pType None () ti.ttype)
-    ++ (text ", treferenced: ") ++ (text (string_of_bool ti.treferenced))
-    ++ (text "}")
+    text "typeinfo{\n"
+    ++ text "tname: \"" ++ text ti.tname ++ text "\",\n"
+    ++ text "ttype: " ++ self#pType None () ti.ttype ++ text ",\n"
+    ++ text "treferenced: " ++ text (string_of_bool ti.treferenced) ++ text "\n"
+    ++ text "}"
 
   method pVDecl () (v: varinfo) : doc =
-    (text "varinfo{vname: ") ++ (text v.vname)
-    ++ (text ", vtype: ") ++ (self#pType None () v.vtype)
-    ++ (text ", vattr: ") ++ (self#pAttrs () v.vattr)
-    (* ++ (text ", vstorage: ") *)
-    ++ (text ", vglob: ") ++ (text (string_of_bool v.vglob))
-    ++ (text ", vinline: ") ++ (text (string_of_bool v.vinline))
-    ++ (text ", vdecl: ") ++ (self#pLineDirective v.vdecl)
-    ++ (text ", vinit: ") ++ (self#pInitInfo v.vinit)
-    ++ (text ", vid: ") ++ (num v.vid)
-    ++ (text ", vaddrof: ") ++ (text (string_of_bool v.vaddrof))
-    ++ (text ", vreferenced: ") ++ (text (string_of_bool v.vreferenced))
-    ++ (text ", vdescr: ") ++ v.vdescr
-    ++ (text ", vdescrpure: ") ++ (text (string_of_bool v.vdescrpure))
-    ++ (text ", vhasdeclinstruction: ") ++ (text (string_of_bool v.vhasdeclinstruction))
-    ++ (text "}")
+    text "varinfo{\n"
+    ++ text "vname: \"" ++ text v.vname ++ text "\",\n"
+    ++ text "vtype: " ++ self#pType None () v.vtype ++ text ",\n"
+    ++ text "vattr: " ++ self#pAttrs () v.vattr ++ text ",\n"
+    (* ++ (text "vstorage: ") *)
+    ++ text "vglob: " ++ text (string_of_bool v.vglob) ++ text ",\n"
+    ++ text "vinline: " ++ text (string_of_bool v.vinline) ++ text ",\n"
+    ++ text "vdecl: " ++ self#pLineDirective v.vdecl ++ text ",\n"
+    ++ text "vinit: " ++ self#pInitInfo v.vinit ++ text ",\n"
+    ++ text "vid: " ++ num v.vid ++ text ",\n"
+    ++ text "vaddrof: " ++ text (string_of_bool v.vaddrof) ++ text ",\n"
+    ++ text "vreferenced: " ++ text (string_of_bool v.vreferenced) ++ text ",\n"
+    ++ text "vdescr: " ++ v.vdescr ++ text ",\n"
+    ++ text "vdescrpure: " ++ text (string_of_bool v.vdescrpure) ++ text ",\n"
+    ++ text "vhasdeclinstruction: " ++ text (string_of_bool v.vhasdeclinstruction) ++ text "\n"
+    ++ text "}"
 
   method pVar (v: varinfo) : doc = self#pVDecl () v
 
@@ -3517,21 +3520,21 @@ class cilAstDumpClass : cilPrinter = object (self)
     match i with
       Set (lv, e, loc) ->
        text "Set("
-       ++ self#pLval () lv ++ text ", "
-       ++ self#pExp () e ++ text ", "
-       ++ self#pLineDirective loc
+       ++ self#pLval () lv ++ text ",\n"
+       ++ self#pExp () e ++ text ",\n"
+       ++ self#pLineDirective loc ++ text "\n"
        ++ text ")"
     | VarDecl (v, loc) ->
        text "VarDecl("
-       ++ self#pVDecl () v ++ text ", "
-       ++ self#pLineDirective loc
+       ++ self#pVDecl () v ++ text ",\n"
+       ++ self#pLineDirective loc ++ text "\n"
        ++ text ")"
     | Call (lv, e, args, loc) ->
        text "Call("
-       ++ (match lv with Some lv' -> self#pLval () lv' | _ -> text "None") ++ text ", "
-       ++ self#pExp () e ++ text ", "
-       ++ self#pList (self#pExp ()) args ++ text ", "
-       ++ self#pLineDirective loc
+       ++ (match lv with Some lv' -> self#pLval () lv' | _ -> text "None") ++ text ",\n"
+       ++ self#pExp () e ++ text ",\n"
+       ++ self#pList (self#pExp ()) args ++ text ",\n"
+       ++ self#pLineDirective loc ++ text "\n"
        ++ text ")"
     | Asm (_, _, _, _, _, _) -> failwith "Cannot print Asm"
 
