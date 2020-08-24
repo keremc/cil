@@ -3565,7 +3565,7 @@ class cilAstDumpClass : cilPrinter = object (self)
   method pBlock () (b: block) : doc =
     text "block{"
     (* ++ text "battrs: " *)
-    ++ text ", bstmts: " ++ self#pList (self#pStmt ()) b.bstmts
+    ++ text "bstmts: " ++ self#pList (self#pStmt ()) b.bstmts
     ++ text "}"
 
   method pGlobal () (g: global) : doc =
