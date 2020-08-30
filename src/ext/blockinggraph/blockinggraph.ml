@@ -549,7 +549,11 @@ let makeFunctionCallGraph (f: Cil.file) : unit =
           ignore (visitCilBlock vis fdec.sbody)
 
       | GVarDecl(vi, _) when isFunctionType vi.vtype ->
-          (* TODO: what if we take the addr of an extern? *)
+          let curNode = getFunctionNode vi.vname in
+          if vi.vaddrof then begin
+            addCall (getFunctionPtrNode vi.vtype)
+                    curNode None;
+          end;
           markVar vi
 
       | _ -> ())
