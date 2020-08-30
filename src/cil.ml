@@ -3704,6 +3704,10 @@ class cilAstDumpClass : cilPrinter = object (self)
        ++ self#pType None () t ++ text ", "
        ++ self#pExp () e
        ++ text ")"
+    | AddrOf lv ->
+       text "AddrOf("
+       ++ self#pLval () lv
+       ++ text ")"
     | _ -> failwith "Cannot print exp"
 
   method pInit () (i: init) : doc =
