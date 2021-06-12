@@ -36,6 +36,16 @@ type timerModeEnum =
   | Disabled      (** Do not collect timing information *)
   | SoftwareTimer (** Use OCaml's [Unix.time] for timing information *)
 
+type t = {
+  name : string;
+  mutable time : float;
+  (* In seconds *)
+  mutable ncalls : int;
+  mutable sub : t list;
+}
+
+val top : t
+
 (** Resets all the timings and specifies the method to use for future timings.
  *  Call this before doing any timing. *)
 val reset: timerModeEnum -> unit
